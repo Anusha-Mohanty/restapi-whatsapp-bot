@@ -28,6 +28,7 @@
    ```bash
    node server.js
    ```
+Once the server is running open a new terminal,
 
 5. **Create a New WhatsApp Session**
    ```powershell
