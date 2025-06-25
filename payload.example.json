@@ -1,0 +1,5 @@
+{
+  "sessionId": "YOUR_SESSION_ID",
+  "sheetName": "YourSheetName",
+  "mode": "scheduled"
+} 
