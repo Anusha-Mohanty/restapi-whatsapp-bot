@@ -88,6 +88,14 @@ Content-Type: application/json
   - `combined`: Both instant and scheduled
 - Returns a summary of sent/skipped/scheduled messages.
 
+or run like this:
+Example (PowerShell):
+
+Invoke-RestMethod -Uri http://localhost:3000/send-now -Method Post -Headers @{"Authorization"="Bearer YOUR_TOKEN"} -ContentType "application/json" -Body (Get-Content -Raw -Path payload.json)
+Example (Linux/macOS):
+
+curl -X POST -H "Authorization: Bearer YOUR_TOKEN" -H "Content-Type: application/json" -d '{"sessionId":"...","sheetName":"...","mode":"scheduled"}' http://localhost:3000/send-now
+
 ---
 
 ## Scheduling & Automation
