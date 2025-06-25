@@ -1,5 +1,74 @@
 # WhatsApp Bot REST API
 
+## Quick Start Workflow
+
+1. **Clone the Repository**
+   ```bash
+   git clone <your-repository-url>
+   cd whatsapp-bot-restapi
+   ```
+
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set Up Environment Variables**
+   - Copy the example file and edit it:
+     ```bash
+     # On Windows (PowerShell)
+     Copy-Item .env.example .env
+
+     # On Linux/macOS
+     cp .env.example .env
+     ```
+   - Edit `.env` and set your `API_TOKEN`.
+
+4. **Start the Server**
+   ```bash
+   node server.js
+   ```
+
+5. **Create a New WhatsApp Session**
+   ```powershell
+   Invoke-RestMethod -Uri http://localhost:3000/session/new -Method Get -Headers @{"Authorization"="Bearer YOUR_API_TOKEN"}
+   ```
+   - Copy the `sessionId` from the response.
+
+6. **Add the Session ID to `payload.json`**
+   - Edit `payload.json`:
+     ```json
+     {
+       "sessionId": "YOUR_SESSION_ID",
+       "sheetName": "YourSheetName",
+       "mode": "instant"
+     }
+     ```
+
+7. **Generate QR Code**
+   ```powershell
+   Invoke-RestMethod -Uri http://localhost:3000/session/YOUR_SESSION_ID/qr -Method Get -Headers @{"Authorization"="Bearer YOUR_API_TOKEN"}
+   ```
+   - Convert the base64 string to an image and scan it with WhatsApp **within 20 seconds** (or repeat this step for a new QR code if it expires).
+
+8. **Wait for WhatsApp Client to be Ready**
+   - Watch the server logs for:  
+     `✅ WhatsApp client is ready for [sessionId]!`
+
+9. **Send Messages (Trigger)**
+   - For instant mode:
+     ```powershell
+     # (Make sure "mode": "instant" in payload.json)
+     Invoke-RestMethod -Uri http://localhost:3000/send-now -Method Post -Headers @{"Authorization"="Bearer YOUR_API_TOKEN"} -ContentType "application/json" -Body (Get-Content -Raw -Path payload.json)
+     ```
+   - For scheduled mode:
+     - Change `"mode": "scheduled"` in `payload.json` and run the same command.
+
+10. **Check Output**
+    - Review the response and server logs for sent, failed, or scheduled messages.
+
+---
+
 ## How to Run
 
 1. **Install dependencies:**
@@ -8,8 +77,13 @@
    ```
 2. **Copy the example environment file and fill in your values:**
    ```bash
+   # On Windows (PowerShell)
+   Copy-Item .env.example .env
+
+   # On Linux/macOS
    cp .env.example .env
-   # Edit .env to set your API_TOKEN and any other required values
+   
+   # Then, edit .env to set your API_TOKEN
    ```
 3. **Start the server:**
    ```bash
@@ -20,39 +94,38 @@
    🚀 REST API server running on port 3000
    ```
 4. **API Usage:**
-   - Use an API client (like Postman) or PowerShell/curl to interact with the endpoints as described below.
-   - For Windows/PowerShell, use a `payload.json` file for POST requests (see below for details).
+   - Use an API client (like Postman) or the PowerShell/curl examples below.
+
+### Example Usage (PowerShell)
+
+**1. Create a New Session:**
+```powershell
+Invoke-RestMethod -Uri http://localhost:3000/session/new -Method Get -Headers @{"Authorization"="Bearer YOUR_API_TOKEN"}
+```
+*(This will return a `sessionId` needed for the next steps.)*
+
+**2. Get QR Code:**
+*(Replace `YOUR_SESSION_ID` with the ID from the previous step)*
+```powershell
+Invoke-RestMethod -Uri http://localhost:3000/session/YOUR_SESSION_ID/qr -Method Get -Headers @{"Authorization"="Bearer YOUR_API_TOKEN"}
+```
+*(This returns a base64 string. Use an online tool to convert it to a QR image and scan with WhatsApp.)*
+
+**3. Send/Schedule Messages:**
+*(First, create a `payload.json` file. You can copy `payload.example.json` to get started.)*
+```powershell
+Invoke-RestMethod -Uri http://localhost:3000/send-now -Method Post -Headers @{"Authorization"="Bearer YOUR_API_TOKEN"} -ContentType "application/json" -Body (Get-Content -Raw -Path payload.json)
+```
 
 ---
 
 ## Why Use `payload.json` for API Testing?
 
-**On Windows/PowerShell, using a `payload.json` file for your API requests is recommended.**
-
-- PowerShell and Windows command line can be tricky with quotes and escaping when passing JSON directly in a command (especially with `curl` or `Invoke-RestMethod`).
-- Using a file avoids escaping issues, is easier to edit, and is more reliable for repeated or team-based testing.
-- For Linux/macOS, you can use inline JSON in commands, but for Windows, a file is much more robust.
-
-**Example (PowerShell):**
-```powershell
-Invoke-RestMethod -Uri http://localhost:3000/send-now -Method Post -Headers @{"Authorization"="Bearer YOUR_TOKEN"} -ContentType "application/json" -Body (Get-Content -Raw -Path payload.json)
-```
-
-**Example (Linux/macOS):**
-```bash
-curl -X POST -H "Authorization: Bearer YOUR_TOKEN" -H "Content-Type: application/json" -d '{"sessionId":"...","sheetName":"...","mode":"scheduled"}' http://localhost:3000/send-now
-```
-
-**Summary Table:**
-
-| Method           | Pros                        | Cons                        | Best For                |
-|------------------|----------------------------|-----------------------------|-------------------------|
-| `payload.json`   | Easy, reusable, no escaping| Needs extra file            | Windows/PowerShell, teams|
-| Inline JSON      | Quick, no file needed      | Escaping is tricky, error-prone | Linux/macOS, quick tests|
+On Windows/PowerShell, using a `payload.json` file for your API requests is recommended. It avoids tricky issues with quotes and escaping characters, making your commands cleaner and more reliable. For Linux/macOS, using inline JSON with `curl` is also common.
 
 ---
 
-## API Usage
+## API Documentation
 All endpoints require the header:
 ```
 Authorization: Bearer <YOUR_API_TOKEN>
@@ -87,14 +160,6 @@ Content-Type: application/json
   - `scheduled`: Only send messages whose scheduled time has arrived
   - `combined`: Both instant and scheduled
 - Returns a summary of sent/skipped/scheduled messages.
-
-or run like this:
-Example (PowerShell):
-
-Invoke-RestMethod -Uri http://localhost:3000/send-now -Method Post -Headers @{"Authorization"="Bearer YOUR_TOKEN"} -ContentType "application/json" -Body (Get-Content -Raw -Path payload.json)
-Example (Linux/macOS):
-
-curl -X POST -H "Authorization: Bearer YOUR_TOKEN" -H "Content-Type: application/json" -d '{"sessionId":"...","sheetName":"...","mode":"scheduled"}' http://localhost:3000/send-now
 
 ---
 
@@ -218,5 +283,6 @@ Send receipt to help@mez.ink & user email.
 - All scheduling is handled automatically after the initial trigger.
 
 ---
+
 
 
