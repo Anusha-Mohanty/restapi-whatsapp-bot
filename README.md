@@ -30,7 +30,7 @@
    ```
 Once the server is running open a new terminal,
 
-5. **Create a New WhatsApp Session**
+5. **Create a New WhatsApp Session** (Replace YOUR_API_TOKEN with the token)
    ```powershell
    Invoke-RestMethod -Uri http://localhost:3000/session/new -Method Get -Headers @{"Authorization"="Bearer YOUR_API_TOKEN"}
    ```
