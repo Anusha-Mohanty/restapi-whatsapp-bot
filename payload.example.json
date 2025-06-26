@@ -1,5 +1,6 @@
 {
   "sessionId": "YOUR_SESSION_ID",
   "sheetName": "YourSheetName",
+  "spreadsheetId": "YOUR_SPREADSHEET_ID",
   "mode": "scheduled"
 } 
