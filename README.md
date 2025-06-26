@@ -28,20 +28,20 @@
    ```bash
    node server.js
    ```
-Once the server is running open a new terminal,
 
-5. **Create a New WhatsApp Session** (Replace YOUR_API_TOKEN with the token)
+5. **Create a New WhatsApp Session**
    ```powershell
    Invoke-RestMethod -Uri http://localhost:3000/session/new -Method Get -Headers @{"Authorization"="Bearer YOUR_API_TOKEN"}
    ```
    - Copy the `sessionId` from the response.
 
-6. **Add the Session ID to `payload.json`**
+6. **Add the Session ID and Spreadsheet ID to `payload.json`**
    - Edit `payload.json`:
      ```json
      {
        "sessionId": "YOUR_SESSION_ID",
        "sheetName": "YourSheetName",
+       "spreadsheetId": "YOUR_SPREADSHEET_ID",
        "mode": "instant"
      }
      ```
@@ -73,9 +73,9 @@ Once the server is running open a new terminal,
 ## How to Run
 
 1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 2. **Copy the example environment file and fill in your values:**
    ```bash
    # On Windows (PowerShell)
@@ -87,7 +87,7 @@ Once the server is running open a new terminal,
    # Then, edit .env to set your API_TOKEN
    ```
 3. **Start the server:**
-   ```bash
+```bash
    node server.js
    ```
    You should see:
@@ -153,6 +153,7 @@ Content-Type: application/json
 {
   "sessionId": "...",
   "sheetName": "YourSheetName",
+  "spreadsheetId": "...",
   "mode": "instant" | "scheduled" | "combined"
 }
 ```
@@ -207,76 +208,6 @@ Content-Type: application/json
 
 ---
 
-## External API Reference
-
-### Generate OTP
-Add support to auto register if user does not exist using `isAutoRegisterer` field.
-
-| URL                                   | Method |
-|----------------------------------------|--------|
-| `{{host}}/usr/v1/login-otp/generate`  | POST   |
-
-<details>
-<summary>Request</summary>
-
-<!-- Example request body here -->
-
-</details>
-
-<details>
-<summary>Response</summary>
-
-<!-- Example response body here -->
-
-</details>
-
----
-
-### Login OTP
-No changes required.
-
-| URL                                 | Method |
-|-------------------------------------|--------|
-| `{{host}}/usr/v1/login-otp/verify` | POST   |
-
-<details>
-<summary>Request</summary>
-
-<!-- Example request body here -->
-
-</details>
-
-<details>
-<summary>Response</summary>
-
-<!-- Example response body here -->
-
-</details>
-
----
-
-### Send Receipt
-Send receipt to help@mez.ink & user email.
-
-| URL                                 | Method | Authorization   |
-|-------------------------------------|--------|-----------------|
-| `{{host}}/usr/v1/invoice/campaign` | POST   | Bearer Token    |
-
-<details>
-<summary>Request</summary>
-
-<!-- Example request body here -->
-
-</details>
-
-<details>
-<summary>Response</summary>
-
-<!-- Example response body here -->
-
-</details>
-
----
 
 ## Notes
 - Keep `.wwebjs_auth` and `sessions.json` safe for persistent login.
