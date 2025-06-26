@@ -48,12 +48,12 @@ async function sendMessage(client, numberOrLink, message, imageUrl) {
   }
 }
 
-async function processCombinedMessages(client, sheetName, options = {}) {
+async function processCombinedMessages(client, sheetName, options = {}, spreadsheetId) {
   const { scheduledMode = false, instantMode = false, autoStopSchedule = false } = options;
 
   console.log(`📋 Processing messages from sheet: ${sheetName} (Instant: ${instantMode}, Scheduled: ${scheduledMode})`);
   
-  const rows = await getRows(sheetName);
+  const rows = await getRows(sheetName, spreadsheetId);
 
   if (!rows || rows.length === 0) {
     console.log('✅ No data to process.');
@@ -143,7 +143,7 @@ async function processCombinedMessages(client, sheetName, options = {}) {
             scheduledMessagesRemaining--;
         }
         try {
-          await updateCellByName(sheetName, rowIndex, statusCol, '✅ Sent');
+          await updateCellByName(sheetName, rowIndex, statusCol, '✅ Sent', spreadsheetId);
         } catch (e) {
           console.error(`❌ Failed to update status for row ${rowIndex}: ${e.message}`);
         }
