@@ -167,7 +167,7 @@ function startScheduledCron() {
       let didWork = false;
       for (const sessionId in sessions) {
         const session = sessions[sessionId];
-        if (session && session.status === 'READY' && session.sheetToSchedule) {
+        if (session && session.status === 'READY' && session.sheetToSchedule && session.spreadsheetIdToSchedule) {
           if (!didWork) {
             console.log('⏰ Running scheduled message check...');
             didWork = true;
@@ -177,7 +177,8 @@ function startScheduledCron() {
             const result = await processCombinedMessages(
               session.client,
               session.sheetToSchedule,
-              { instantMode: false, scheduledMode: true, combinedMode: false }
+              { instantMode: false, scheduledMode: true, combinedMode: false },
+              session.spreadsheetIdToSchedule
             );
             if (
               result &&
@@ -186,6 +187,7 @@ function startScheduledCron() {
             ) {
               console.log(`✅ All scheduled messages sent for session ${sessionId} on sheet ${session.sheetToSchedule}. Stopping further checks for this session.`);
               delete session.sheetToSchedule;
+              delete session.spreadsheetIdToSchedule;
               // If no more sessions need scheduling, stop the cron
               if (!Object.values(sessions).some(s => s.sheetToSchedule)) {
                 stopScheduledCron();
@@ -210,9 +212,9 @@ function stopScheduledCron() {
 }
 
 app.post('/send-now', requireAuth, async (req, res) => {
-  const { sessionId, mode: rawMode, sheetName } = req.body;
-  if (!sessionId || !sheetName) {
-    return res.status(400).json({ error: 'sessionId and sheetName are required.' });
+  const { sessionId, mode: rawMode, sheetName, spreadsheetId } = req.body;
+  if (!sessionId || !sheetName || !spreadsheetId) {
+    return res.status(400).json({ error: 'sessionId, sheetName, and spreadsheetId are required.' });
   }
 
   const session = getSession(sessionId);
@@ -233,12 +235,13 @@ app.post('/send-now', requireAuth, async (req, res) => {
   // If scheduled, register the sheet for auto-processing
   if (mode === 'scheduled' || mode === 'combined') {
     session.sheetToSchedule = sheetName;
+    session.spreadsheetIdToSchedule = spreadsheetId;
     console.log(`✅ Scheduling enabled for session ${sessionId} on sheet ${sheetName}`);
     startScheduledCron(); // Start cron if not already running
   }
 
   try {
-    const result = await processCombinedMessages(session.client, sheetName, options);
+    const result = await processCombinedMessages(session.client, sheetName, options, spreadsheetId);
     let responseMessage = { success: true, mode, result };
     if (session.sheetToSchedule) {
       responseMessage.message = `Scheduled processing has been enabled for sheet: ${sheetName}. The server will now check for due messages automatically.`;
